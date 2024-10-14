@@ -24,6 +24,21 @@ class Quaternion:
 
         return cls(w, x, y, z)
 
+    def to_axis_angle(self) -> (tuple, float):
+        sin_half_angle = 1 - self.w ** 2
+        x = self.x / sin_half_angle
+        y = self.y / sin_half_angle
+        z = self.z / sin_half_angle
+        return (x, y, z), 2 * np.acos(self.w)
+
+
+    def to_rot_mat(self) -> glm.mat3:
+        return glm.mat3(
+            1 - 2 * self.y ** 2 - 2 * self.z ** 2, 2 * self.x * self.y - 2 * self.z * self.w, 2 * self.x * self.z + 2 * self.y * self.w,
+            2 * self.x * self.y + 2 * self.z * self.w, 1 - 2 * self.x ** 2 - 2 * self.z ** 2, 2 * self.y * self.z - 2 * self.x * self.w,
+            2 * self.x * self.z - 2 * self.y * self.w, 2 * self.y * self.w + 2 * self.x * self.w, 1 - 2 * self.x ** 2 - 2 * self.y ** 2
+        )
+
     def __mul__(self, q: Quaternion) -> Quaternion:
         return Quaternion(
             self.w * q.w - self.x * q.x - self.y * q.y - self.z * q.z,
@@ -35,20 +50,5 @@ class Quaternion:
     def conjugate(self) -> Quaternion:
         return Quaternion(self.w, -self.x, -self.y, -self.z)
 
-
-if __name__ == "__main__":
-    random_axis1 = np.random.rand(3)
-    random_angle1 = np.random.uniform(0, np.pi * 2)
-    random_axis2 = np.random.rand(3)
-    random_angle2 = np.random.uniform(0, np.pi * 2)
-
-    glm_quat1 = glm.quat(glm.angleAxis(random_angle1, glm.vec3(random_axis1)))
-    my_quat1 = Quaternion.from_axis_angle(random_axis1, random_angle1)
-    glm_quat2 = glm.quat(glm.angleAxis(random_angle2, glm.vec3(random_axis2)))
-    my_quat2 = Quaternion.from_axis_angle(random_axis2, random_angle2)
-
-    my_res = my_quat1 * my_quat2
-    glm_res = glm_quat1 * glm_quat2
-
-    print("Результат умножения кватернионов pyglm: ", glm_res)
-    print("Результат самописного умножения кватернионов: ", my_res)
+    def __repr__(self):
+        return f"Quaternion(w={self.w:.4f}, x={self.x:.4f}, y={self.y:.4f}, z={self.z:.4f})"
