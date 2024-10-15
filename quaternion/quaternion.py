@@ -29,8 +29,7 @@ class Quaternion:
         x = self.x / sin_half_angle
         y = self.y / sin_half_angle
         z = self.z / sin_half_angle
-        return (x, y, z), 2 * np.acos(self.w)
-
+        return (x, y, z), 2 * np.arccos(self.w)
 
     def to_rot_mat(self) -> glm.mat3:
         return glm.mat3(
@@ -39,7 +38,21 @@ class Quaternion:
             2 * self.x * self.z - 2 * self.y * self.w, 2 * self.y * self.w + 2 * self.x * self.w, 1 - 2 * self.x ** 2 - 2 * self.y ** 2
         )
 
-    def __mul__(self, q: Quaternion) -> Quaternion:
+    def __add__(self, quat: Quaternion) -> Quaternion:
+        return Quaternion(self.w + quat.w, self.x + quat.x, self.y + quat.y, self.z + quat.z)
+
+
+    def __sub__(self, quat: Quaternion) -> Quaternion:
+        return Quaternion(self.w - quat.w, self.x - quat.x, self.y - quat.y, self.z - quat.z)
+
+
+    def __mul__(self, other: Quaternion | float) -> Quaternion | float:
+        if isinstance(other, Quaternion):
+            return self.w * other.w + self.x * other.x + self.y * other.y + self.z * other.z
+        return Quaternion(self.w * other, self.x * other, self.y * other, self.z * other)
+
+
+    def __matmul__(self, q: Quaternion) -> Quaternion:
         return Quaternion(
             self.w * q.w - self.x * q.x - self.y * q.y - self.z * q.z,
             self.w * q.x + self.x * q.w + self.y * q.z - self.z * q.y,
@@ -47,8 +60,21 @@ class Quaternion:
             self.w * q.z + self.x * q.y - self.y * q.x + self.z * q.w
         )
 
-    def conjugate(self) -> Quaternion:
+    @property
+    def conj(self) -> Quaternion:
         return Quaternion(self.w, -self.x, -self.y, -self.z)
+
+    @property
+    def norm(self) -> float:
+        return np.sqrt(self.w ** 2 + self.x ** 2 + self.y ** 2 + self.z ** 2)
+
+    @property
+    def inv(self) -> Quaternion:
+        return self.conj * (1 / (self.norm ** 2))
+
+    def normalize(self) -> Quaternion:
+        norm = self.norm
+        return Quaternion(self.w / norm, self.x / norm, self.y / norm, self.z / norm)
 
     def __repr__(self):
         return f"Quaternion(w={self.w:.4f}, x={self.x:.4f}, y={self.y:.4f}, z={self.z:.4f})"

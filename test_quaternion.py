@@ -49,7 +49,7 @@ class TestQuaternion(unittest.TestCase):
             my_quat2 = Quaternion(*quat2)
 
             glm_res = glm_quat1 * glm_quat2
-            my_res = my_quat1 * my_quat2
+            my_res = my_quat1 @ my_quat2
 
             self.assertAlmostEqual(glm_res.w, my_res.w, 6)
             self.assertAlmostEqual(glm_res.x, my_res.x, 6)
