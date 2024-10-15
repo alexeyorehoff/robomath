@@ -1,4 +1,7 @@
+import numpy as np
 from quaternion import Quaternion
+import glm
+import math
 
 
 task1_input = (
@@ -16,6 +19,7 @@ task1_input = (
     ((-0.4320, 0.3838, 0.8162), 1.8309),
 )
 
+
 task2_input = (
     (-0.4161, 0.3523, -0.3074, 0.7800),
     (0.9010, -0.0131, -0.3935, 0.1818),
@@ -32,6 +36,22 @@ task2_input = (
 )
 
 
+task3_input = (
+    glm.mat3(-0.5092, -0.0269, 0.8602, 0.7973, 0.3617, 0.4833, -0.3242, 0.9319, -0.1628),
+    glm.mat3(-0.4434, -0.4486, 0.7760, 0.8961, -0.2012, 0.3957, -0.0214, 0.8708, 0.4912),
+    glm.mat3(-0.1350, -0.1968, 0.9711, 0.7667, -0.6416, -0.0234, 0.6277, 0.7413, 0.2375),
+    glm.mat3(0.2233, 0.7083, 0.6697, -0.7767, -0.5402, 0.3107, 0.5818, 0.4544, -0.6746),
+    glm.mat3(0.2117, -0.0352, 0.9767, 0.7344, -0.7459, -0.1666, 0.6441, 0.6652, -0.1352),
+    glm.mat3(-0.4777, -0.3495, 0.8060, 0.8728, 0.0549, 0.4845,  0.1000, 0.8899, 0.4451),
+    glm.mat3(0.0028, -0.0401, 0.9992, 0.8698, -0.4929, -0.0222, 0.4934, 0.8692, 0.0198),
+    glm.mat3(-0.8299, 0.2217, 0.5120, 0.3220, -0.5592, 0.7654,  0.4557, 0.7993, 0.3944),
+    glm.mat3(-0.1631, 0.9346, 0.3162, -0.9840, 0.1773, -0.0197, -0.0716, 0.3084, -0.9458),
+    glm.mat3(0.2696, 0.2931, 0.9173, 0.8224, 0.4411, -0.3594, -0.2317, 0.9463, -0.2336),
+    glm.mat3(-0.3565, 0.0457, 0.9332, 0.9174, -0.0469, 0.3959, -0.2073, 0.9701, -0.1267),
+    glm.mat3(-0.5114, 0.6895, 0.5130, 0.8520, 0.4865, 0.1934, -0.1121, 0.5303, -0.8404)
+)
+
+
 def task1():
     print("Task 1: Преобразовать ось-угол в кватернион")
     for axis, angle in task1_input:
@@ -44,6 +64,37 @@ def task2():
         print(Quaternion(*quat).to_rot_mat(), end="\n\n")
 
 
+def mat_to_axis_angle(mat: glm.mat3) -> ((), float):
+    angle = math.acos((mat[0, 0] + mat[1, 1] + mat[2, 2] - 1) / 2)
+    axis = glm.vec3(mat[2, 1] - mat[1, 2], mat[0, 2] - mat[2, 0], mat[1, 0] - mat[0, 1]) / 2 / math.sin(angle)
+    return tuple(axis), angle
+
+
+def task3():
+    print("Task 2: Преобразовать матрицы в ось-угол")
+    for mat in task3_input:
+        print(mat_to_axis_angle(mat))
+
+
+def quat_slerp(start: Quaternion, end: Quaternion, steps: int):
+    cos_omega = start * end
+    sin_omega = 1 - cos_omega ** 2
+    omega = np.arccos(cos_omega)
+    res = [start]
+    for iteration in range(1, steps - 1):
+        t = iteration / steps
+        res.append(
+            start * np.sin((1 - t) * omega) / sin_omega + end * np.sin(t * omega) / sin_omega
+        )
+    res.append(end)
+    return np.array(res)
+
+
+def task4():
+    pass
+
+
 if __name__ == "__main__":
     task1()
     task2()
+    task3()
