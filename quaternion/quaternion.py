@@ -51,6 +51,11 @@ class Quaternion:
             return self.w * other.w + self.x * other.x + self.y * other.y + self.z * other.z
         return Quaternion(self.w * other, self.x * other, self.y * other, self.z * other)
 
+    def __truediv__(self, other: float) -> Quaternion:
+        return Quaternion(self.w / other, self.x / other, self.y / other, self.z / other)
+
+    def __neg__(self) -> Quaternion:
+        return Quaternion(-self.w, -self.x, -self.y, -self.z)
 
     def __matmul__(self, q: Quaternion) -> Quaternion:
         return Quaternion(
@@ -59,6 +64,11 @@ class Quaternion:
             self.w * q.y - self.x * q.z + self.y * q.w + self.z * q.x,
             self.w * q.z + self.x * q.y - self.y * q.x + self.z * q.w
         )
+
+    def rotate(self, vector: glm.vec3) -> glm.vec3:
+        vector_quat = Quaternion(0, *vector)
+        rotated_quat = self @ vector_quat @ self.inv
+        return glm.vec3(rotated_quat.x, rotated_quat.y, rotated_quat.z)
 
     @property
     def conj(self) -> Quaternion:

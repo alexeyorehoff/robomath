@@ -1,5 +1,7 @@
 import numpy as np
 from quaternion import Quaternion
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import glm
 import math
 
@@ -77,11 +79,15 @@ def task3():
 
 
 def quat_slerp(start: Quaternion, end: Quaternion, steps: int):
-    cos_omega = start * end
-    sin_omega = 1 - cos_omega ** 2
+    if (start * end < 0):
+        end = -end
+
+    cos_omega = (start * end) / start.norm / end.norm
     omega = np.arccos(cos_omega)
+    sin_omega = np.sin(omega)
     res = [start]
-    for iteration in range(1, steps - 1):
+
+    for iteration in range(1, steps):
         t = iteration / steps
         res.append(
             start * np.sin((1 - t) * omega) / sin_omega + end * np.sin(t * omega) / sin_omega
@@ -91,10 +97,38 @@ def quat_slerp(start: Quaternion, end: Quaternion, steps: int):
 
 
 def task4():
-    pass
+    axis1 = np.random.rand(3)
+    axis1 /= np.linalg.norm(axis1)
+    angle1 = np.random.uniform(0, np.pi * 2)
+    quat1 = Quaternion.from_axis_angle(axis1, angle1)
+
+
+    axis2 = np.random.rand(3)
+    axis2 /= np.linalg.norm(axis2)
+    angle2 = np.random.uniform(0, np.pi * 2)
+    quat2 = Quaternion.from_axis_angle(axis2, angle2)
+
+    interpolation = quat_slerp(quat1, quat2, 10)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+
+    origin = glm.vec3(0, 0, 0)
+    vector = glm.vec3(0, 0, 1)
+
+    for quat in interpolation:
+        rotated_vector = quat.rotate(vector)
+        ax.quiver(*origin, *rotated_vector, color='r', label='Rotated Vector')
+
+    ax.set_xlim([-2, 2])
+    ax.set_ylim([-2, 2])
+    ax.set_zlim([-2, 2])
+    plt.show()
+
 
 
 if __name__ == "__main__":
-    task1()
-    task2()
-    task3()
+    # task1()
+    # task2()
+    # task3()
+    task4()
