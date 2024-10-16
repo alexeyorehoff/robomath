@@ -25,7 +25,7 @@ class Quaternion:
         return cls(w, x, y, z)
 
     def to_axis_angle(self) -> (tuple, float):
-        sin_half_angle = 1 - self.w ** 2
+        sin_half_angle = np.sqrt(1 - self.w ** 2)
         x = self.x / sin_half_angle
         y = self.y / sin_half_angle
         z = self.z / sin_half_angle
@@ -41,10 +41,8 @@ class Quaternion:
     def __add__(self, quat: Quaternion) -> Quaternion:
         return Quaternion(self.w + quat.w, self.x + quat.x, self.y + quat.y, self.z + quat.z)
 
-
     def __sub__(self, quat: Quaternion) -> Quaternion:
         return Quaternion(self.w - quat.w, self.x - quat.x, self.y - quat.y, self.z - quat.z)
-
 
     def __mul__(self, other: Quaternion | float) -> Quaternion | float:
         if isinstance(other, Quaternion):
@@ -82,9 +80,23 @@ class Quaternion:
     def inv(self) -> Quaternion:
         return self.conj * (1 / (self.norm ** 2))
 
+    def slerp(self, other: Quaternion, t: float) -> Quaternion:
+        dot = np.clip(self * other, -1, 1)
+        if dot < 0:
+            dot = -dot
+            other = -other
+        omega = np.arccos(dot)
+        sin_omega = np.sin(omega)
+        scale_self = np.sin((1 - t) * omega) / sin_omega
+        scale_other = np.sin(t * omega) / sin_omega
+        return self * scale_self + other * scale_other
+
     def normalize(self) -> Quaternion:
         norm = self.norm
         return Quaternion(self.w / norm, self.x / norm, self.y / norm, self.z / norm)
 
-    def __repr__(self):
+    def __iter__(self):
+        return iter((self.w, self.x, self.y, self.z))
+
+    def __repr__(self) -> str:
         return f"Quaternion(w={self.w:.4f}, x={self.x:.4f}, y={self.y:.4f}, z={self.z:.4f})"

@@ -78,47 +78,39 @@ def task3():
         print(mat_to_axis_angle(mat))
 
 
-def quat_slerp(start: Quaternion, end: Quaternion, steps: int):
-    if (start * end < 0):
-        end = -end
-
-    cos_omega = (start * end) / start.norm / end.norm
-    omega = np.arccos(cos_omega)
-    sin_omega = np.sin(omega)
-    res = [start]
-
-    for iteration in range(1, steps):
-        t = iteration / steps
-        res.append(
-            start * np.sin((1 - t) * omega) / sin_omega + end * np.sin(t * omega) / sin_omega
-        )
-    res.append(end)
-    return np.array(res)
+def random_axis_angle():
+    axis = np.random.normal(size=3)
+    axis = axis / np.linalg.norm(axis)
+    angle = np.random.uniform(0, 2 * np.pi)
+    return axis, angle
 
 
 def task4():
-    axis1 = np.random.rand(3)
-    axis1 /= np.linalg.norm(axis1)
-    angle1 = np.random.uniform(0, np.pi * 2)
-    quat1 = Quaternion.from_axis_angle(axis1, angle1)
+    inter_steps = 10
+    axis1, angle1 = random_axis_angle()
+    axis2, angle2 = random_axis_angle()
 
+    q1 = Quaternion.from_axis_angle(axis1, angle1)
+    q2 = Quaternion.from_axis_angle(axis2, angle2)
 
-    axis2 = np.random.rand(3)
-    axis2 /= np.linalg.norm(axis2)
-    angle2 = np.random.uniform(0, np.pi * 2)
-    quat2 = Quaternion.from_axis_angle(axis2, angle2)
+    # q1 = Quaternion(1, 0, 0, 0)
+    # q2 = Quaternion(0, 0, 1, 1).normalize()
 
-    interpolation = quat_slerp(quat1, quat2, 10)
+    print(f"Quaternion 1: {q1}")
+    print(f"Quaternion 2: {q2}\n")
+
+    vector = glm.vec3(1, 0, 0)
+    origin = glm.vec3(0, 0, 0)
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
 
-    origin = glm.vec3(0, 0, 0)
-    vector = glm.vec3(0, 0, 1)
-
-    for quat in interpolation:
-        rotated_vector = quat.rotate(vector)
+    for i in range(inter_steps + 1):
+        t = i / inter_steps
+        interpolated_quat = q1.slerp(q2, t)
+        rotated_vector = interpolated_quat.rotate(vector)
         ax.quiver(*origin, *rotated_vector, color='r', label='Rotated Vector')
+        print(f"t={t:.2f}: {interpolated_quat}")
 
     ax.set_xlim([-2, 2])
     ax.set_ylim([-2, 2])
@@ -126,9 +118,8 @@ def task4():
     plt.show()
 
 
-
 if __name__ == "__main__":
-    # task1()
-    # task2()
-    # task3()
+    task1()
+    task2()
+    task3()
     task4()
