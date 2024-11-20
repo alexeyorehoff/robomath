@@ -35,6 +35,8 @@ if __name__ == "__main__":
 
     draw_coordinate_frame(ax, Quaternion())
     axis, angle = random_axis_angle()
+    ax.plot([0, axis[0]], [0, axis[1]], [0, axis[2]], color="black", linestyle="-")
+
     print(f"Rotating coordinate system around {tuple(map(lambda el: round(float(el), 3),  axis))} by {angle:.3f} rad")
     draw_coordinate_frame(ax, Quaternion.from_axis_angle(*random_axis_angle()), dotted=True)
 

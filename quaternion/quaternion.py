@@ -78,7 +78,7 @@ class Quaternion:
 
     @property
     def inv(self) -> Quaternion:
-        return self.conj * (1 / (self.norm ** 2))
+        return self.conj / (self.norm ** 2)
 
     def slerp(self, other: Quaternion, t: float) -> Quaternion:
         dot = np.clip(self * other, -1, 1)

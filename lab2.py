@@ -66,8 +66,24 @@ def task2():
         print(Quaternion(*quat).to_rot_mat(), end="\n\n")
 
 
-def mat_to_axis_angle(mat: glm.mat3) -> ((), float):
-    angle = math.acos((mat[0, 0] + mat[1, 1] + mat[2, 2] - 1) / 2)
+def mat_to_axis_angle(mat: glm.mat3) -> (tuple, float):
+    trace = mat[0, 0] + mat[1, 1] + mat[2, 2]
+    angle = math.acos((trace - 1) / 2)
+
+    if math.isclose(angle, 0, abs_tol=1e-6):
+        return (1.0, 0.0, 0.0), 0.0
+
+    if math.isclose(angle, math.pi, abs_tol=1e-6):
+        axis = glm.vec3(
+            math.sqrt(max(mat[0, 0] - mat[1, 1] - mat[2, 2] + 1, 0)) / 2,
+            math.sqrt(max(mat[1, 1] - mat[0, 0] - mat[2, 2] + 1, 0)) / 2,
+            math.sqrt(max(mat[2, 2] - mat[0, 0] - mat[1, 1] + 1, 0)) / 2,
+            )
+        axis.x *= 1 if mat[2, 1] - mat[1, 2] >= 0 else -1
+        axis.y *= 1 if mat[0, 2] - mat[2, 0] >= 0 else -1
+        axis.z *= 1 if mat[1, 0] - mat[0, 1] >= 0 else -1
+        return tuple(axis), angle
+
     axis = glm.vec3(mat[2, 1] - mat[1, 2], mat[0, 2] - mat[2, 0], mat[1, 0] - mat[0, 1]) / 2 / math.sin(angle)
     return tuple(axis), angle
 
@@ -119,7 +135,11 @@ def task4():
 
 
 if __name__ == "__main__":
-    task1()
-    task2()
-    task3()
-    task4()
+    # task1()
+    # task2()
+    # task3()
+    # task4()
+
+    print(mat_to_axis_angle(glm.mat3(-1, 0, 0,
+                                     0, -1, 0,
+                                     0, 0, 1)))
