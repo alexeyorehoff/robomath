@@ -1,8 +1,9 @@
 from __future__ import annotations
 import copy
 import heapq
+from time import perf_counter
 import dataclasses
-from typing import Optional
+from typing import Optional, Callable
 import numpy as np
 from numpy.typing import NDArray
 from lab6 import *
@@ -105,6 +106,75 @@ def dijkstra(grid_map: NDArray[bool], start: pos_type, finish: pos_type) -> (boo
     return False, ()
 
 
+def heuristics(first: pos_type, second: pos_type) -> float:
+    return abs(first[0] - second[0]) + abs(first[1] - second[1])
+
+
+def a_star(grid_map: NDArray[bool], start: pos_type, finish: pos_type) -> (bool, tuple[pos_type, ...]):
+    graph = MapGraph(grid_map)
+    start_node = graph.get_node(start)
+    finish_node = graph.get_node(finish)
+
+    if start_node is None:
+        raise AttributeError(f"Start position {start} is not valid.")
+    if finish_node is None:
+        raise AttributeError(f"Finish position {finish} is not valid.")
+
+    priority_queue: list[tuple[float, Node]] = []
+    start_node.cost = 0
+    heapq.heappush(priority_queue, (0, start_node))  # Push with initial cost (f = g + h)
+    visited_nodes = set()
+
+    while priority_queue:
+        current_f, current_node = heapq.heappop(priority_queue)
+
+        if current_node == finish_node:
+            # Reconstruct path
+            path = []
+            while current_node:
+                path.append(current_node.pos)
+                current_node = current_node.previous
+            return True, tuple(reversed(path))
+
+        if current_node in visited_nodes:
+            continue
+
+        visited_nodes.add(current_node)
+
+        for neighbor in current_node.neighbors:
+            if neighbor in visited_nodes:
+                continue
+
+            # Calculate tentative g-cost
+            tentative_g_cost = current_node.cost + 1
+            h_cost = heuristics(neighbor.pos, finish_node.pos)
+            f_cost = tentative_g_cost + h_cost
+
+            if tentative_g_cost < neighbor.cost:
+                neighbor.cost = tentative_g_cost
+                neighbor.previous = current_node
+                heapq.heappush(priority_queue, (f_cost, neighbor))
+
+    return False, ()
+
+
+def run_algorithm(algorithm: Callable, algo_name: str, grid_map: NDArray[bool], start: pos_type, finish: pos_type):
+    path = "lab6/results/" + algo_name
+    start_time = perf_counter()
+    has_res, found_path = algorithm(grid_map_mat, start_pos, goal_pos)
+    end_time = perf_counter()
+    if has_res:
+        print(f"Found path with {algo_name} algorithm: \n", found_path, f"\nCalculation took {end_time - start_time}s")
+        dijkstra_field = copy.deepcopy(initial_field)
+        dijkstra_field.display_grid(path + "/0.jpg")
+        dijkstra_field.place_object(GridObject("Player", start_pos, ObjType.player))
+        for num, pos in enumerate(found_path):
+            dijkstra_field.move_object("Player", pos)
+            dijkstra_field.display_grid(f"{path}/{num + 1}.jpg")
+    else:
+        print("No path found")
+
+
 if __name__  == "__main__":
     start_pos = (0, 5)
     goal_pos = (10, 5)
@@ -113,15 +183,5 @@ if __name__  == "__main__":
         GridObject(name="Start", pos=start_pos, obj_type=ObjType.start),
         GridObject(name="Goal", pos=goal_pos, obj_type=ObjType.finish),
     ))
-
-    has_res, found_path = dijkstra(grid_map_mat, start_pos, goal_pos)
-    if has_res:
-        dijkstra_field = copy.deepcopy(initial_field)
-        dijkstra_field.display_grid("lab6/results/dijkstra/0.jpg")
-        dijkstra_field.place_object(GridObject("Player", start_pos, ObjType.player))
-        for num, pos in enumerate(found_path):
-            dijkstra_field.move_object("Player", pos)
-            dijkstra_field.display_grid(f"lab6/results/dijkstra/{num + 1}.jpg")
-
-
-
+    run_algorithm(dijkstra, "dijkstra", grid_map_mat, start_pos, goal_pos)
+    run_algorithm(a_star, "a_star", grid_map_mat, start_pos, goal_pos)
