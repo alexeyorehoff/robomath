@@ -3,10 +3,10 @@ import copy
 import heapq
 from time import perf_counter
 import dataclasses
-from typing import Optional, Callable
+from typing import Callable
 import numpy as np
 from numpy.typing import NDArray
-from lab6 import *
+from grid_map_visualizer import pos_type, GridMap, GridObject
 
 
 def load_grid(save_path: str) -> NDArray[bool]:
@@ -178,7 +178,7 @@ def run_algorithm(algorithm: Callable, algo_name: str, grid_map: NDArray[bool], 
 if __name__  == "__main__":
     start_pos = (0, 5)
     goal_pos = (10, 5)
-    grid_map_mat = load_grid("lab6/assets/lab6_path.txt")
+    grid_map_mat = load_grid("assets/lab6_path.txt")
     initial_field = GridMap(grid_map_mat, (
         GridObject(name="Start", pos=start_pos, obj_type=ObjType.start),
         GridObject(name="Goal", pos=goal_pos, obj_type=ObjType.finish),
