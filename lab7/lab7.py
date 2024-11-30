@@ -11,9 +11,10 @@ class Shape:
     def __init__(self, shape_points: tuple[vec2, ...]):
         self._shape = shape_points
 
-    def _get_axes(self) -> list[vec2]:
-        # Возвращает список из векторов параллельных сторонам объекта
-        return [edge[1] - edge[0] for edge in zip(self._shape, self._shape[1:])]
+    def _get_normals(self) -> list[vec2]:
+        # Возвращает список нормалей каждой из сторон объекта
+        return [glm.vec2(edge[1] - edge[0]).yx for edge in zip(self._shape, self._shape[1:] + self._shape[:1])]
+
 
     def _project(self, axis: vec2) -> tuple[float, float]:
         # Проецирует точки объекта на вектор
@@ -30,8 +31,8 @@ class Shape:
         return proj1[1] >= proj2[0] and proj2[1] >= proj1[0]
 
     def check_collision(self, other: Shape) -> bool:
-        axes_self = self._get_axes()
-        axes_other = other._get_axes()
+        axes_self = self._get_normals()
+        axes_other = other._get_normals()
 
         for axis in axes_self + axes_other:
             axis /= glm.length(axis)
@@ -73,22 +74,21 @@ def plot_shapes(shape1: Shape, shape2: Shape, collision: bool):
 
 if __name__ == "__main__":
     shape1 = Shape((
-        vec2(2, 0),
-        vec2(2, 2),
-        vec2(0, 2)
+        vec2(0, -0.5),
+        vec2(0, 3),
+        vec2(1, 1.5)
     ))
 
     shape2 = Shape((
-        vec2(1, 1),
-        vec2(3, 3),
-        vec2(1, 3)
+        vec2(2, 1.5),
+        vec2(0.5, 0),
+        vec2(2, -1.5)
     ))
 
     shape3 = Shape((
-        vec2(3, 0),
-        vec2(5, 0),
-        vec2(5, 2),
-        vec2(3, 2)
+        vec2(2, 1.5),
+        vec2(-1, 0),
+        vec2(2, -1.5)
     ))
 
     collision1 = shape1.check_collision(shape2)
