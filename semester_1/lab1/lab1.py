@@ -1,4 +1,4 @@
-from quaternion import Quaternion
+from semester_1.quaternion import Quaternion
 import numpy as np
 import matplotlib.pyplot as plt
 import glm

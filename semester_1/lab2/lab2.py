@@ -1,7 +1,6 @@
 import numpy as np
-from quaternion import Quaternion
+from semester_1.quaternion import Quaternion
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import glm
 import math
 

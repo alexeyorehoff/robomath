@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import glm
-from quaternion import Quaternion
+from semester_1.quaternion import Quaternion
 
 np.random.seed(228)
 
