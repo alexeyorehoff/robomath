@@ -13,7 +13,7 @@ def plot_function() -> None:
     ys = list(map(test_function, xs))
 
     plt.scatter(xs, ys)
-    plt.savefig("res.png")
+    plt.savefig("results/cos_exp.png")
 
 def gen_random(array_size = 100_000) -> None:
     np.random.seed = 228
@@ -24,9 +24,9 @@ def gen_random(array_size = 100_000) -> None:
     print(f"Uniform distribution array - {np.mean(uniform_array)} mean, {np.std(uniform_array)} std")
 
     matplotlib.pyplot.hist(norm_array, bins=50)
-    plt.savefig("normal_distribution.png")
+    plt.savefig("results/normal_distribution.png")
     matplotlib.pyplot.hist(uniform_array, bins=50)
-    plt.savefig("uniform_distribution.png")
+    plt.savefig("results/uniform_distribution.png")
 
 
 def gen_spiral(size: int) -> list:
