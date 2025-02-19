@@ -92,9 +92,7 @@ l_y
 l_x' \\
 l_y'
 \end{matrix}
-\right)
- - 
-\left(
+\right)-\left(
 \begin{matrix}
 x_1 \\
 y_1
@@ -138,3 +136,4 @@ $$
 в кадр все равно попали точки, находящиеся за ним.
 
 ![](/semester_2/lab1/assets/processed_points.png)
+
