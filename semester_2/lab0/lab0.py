@@ -31,17 +31,17 @@ def gen_random(array_size = 100_000) -> None:
 
 def gen_spiral(size: int) -> list:
     coord_range = range(size)
-    spiral_direction = glm.ivec2(1, 0)
-    def rotate_direction(direction: glm.ivec2) -> glm.ivec2:
-        return glm.ivec2(-direction.y, direction.x)
+    spiral_direction = [1, 0]
+    def rotate_direction(direction: list) -> list:
+        return [-direction[1], direction[0]]
     matrix = [[0 for _ in coord_range] for _ in coord_range]
-    matrix_pos = glm.ivec2(0, 0)
+    matrix_pos = [0, 0]
     for idx in range(1, size ** 2 + 1):
-        matrix[matrix_pos.y][matrix_pos.x] = idx
-        next_pos = matrix_pos + spiral_direction
-        if not (next_pos.x in coord_range and next_pos.y in coord_range and matrix[next_pos.y][next_pos.x] == 0):
+        matrix[matrix_pos[1]][matrix_pos[0]] = idx
+        next_pos = [matrix_pos[0] + spiral_direction[0], matrix_pos[1] + spiral_direction[1]]
+        if not (next_pos[0] in coord_range and next_pos[1] in coord_range and matrix[next_pos[1]][next_pos[0]] == 0):
             spiral_direction = rotate_direction(spiral_direction)
-        matrix_pos = matrix_pos + spiral_direction
+        matrix_pos = [matrix_pos[0] + spiral_direction[0], matrix_pos[1] + spiral_direction[1]]
     return matrix
 
 def draw_matrix(matrix):
