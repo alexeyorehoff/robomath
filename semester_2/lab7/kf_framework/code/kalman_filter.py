@@ -84,6 +84,30 @@ def prediction_step(odometry, mu, sigma):
 
     '''your code here'''
 
+    # State prediction (motion model)
+    new_x = x + delta_trans * np.cos(theta + delta_rot1)
+    new_y = y + delta_trans * np.sin(theta + delta_rot1)
+    new_theta = theta + delta_rot1 + delta_rot2
+    
+    mu = np.array([new_x, new_y, new_theta])
+
+    # Jacobian of motion model (Gt)
+    Gt = np.array([
+        [1, 0, -delta_trans * np.sin(theta + delta_rot1)],
+        [0, 1, delta_trans * np.cos(theta + delta_rot1)],
+        [0, 0, 1]
+    ])
+
+    # Process noise covariance matrix
+    Qt = np.array([
+        [0.2, 0, 0],
+        [0, 0.2, 0],
+        [0, 0, 0.2]
+    ])
+
+    # Covariance prediction
+    sigma = Gt @ sigma @ Gt.T + Qt
+
     '''***        ***'''
 
     return mu, sigma
@@ -107,6 +131,48 @@ def correction_step(sensor_data, mu, sigma, landmarks):
     ranges = sensor_data['range']
 
     '''your code here'''
+    theta = mu[2]
+    bearings = sensor_data['bearing']
+
+    Rt = np.eye(2 * len(ids)) * 0.5
+    
+    # Initialize matrices for stacked measurements, predictions, and Jacobians
+    z = np.zeros(2 * len(ids))
+    z_pred = np.zeros(2 * len(ids))
+    H = np.zeros((2 * len(ids), 3))
+    
+    for i in range(len(ids)):
+        lm_id = ids[i]
+        lm_x = landmarks[lm_id][0]
+        lm_y = landmarks[lm_id][1]
+        
+        # Actual measurement
+        z[2*i] = ranges[i]
+        z[2*i+1] = bearings[i]
+        
+        # Predicted measurement
+        dx = lm_x - x
+        dy = lm_y - y
+        q = dx**2 + dy**2
+        
+        z_pred[2*i] = np.sqrt(q)
+        z_pred[2*i+1] = np.arctan2(dy, dx) - theta
+        
+        # Jacobian for this measurement
+        H[2*i:2*i+2, :] = np.array([
+            [-dx/np.sqrt(q), -dy/np.sqrt(q), 0],
+            [dy/q, -dx/q, -1]
+        ])
+    
+    # Kalman gain
+    K = sigma @ H.T @ np.linalg.inv(H @ sigma @ H.T + Rt)
+    
+    # State correction
+    mu = mu + K @ (z - z_pred)
+    mu[2] = np.arctan2(np.sin(mu[2]), np.cos(mu[2]))  # Normalize angle
+    
+    # Covariance correction
+    sigma = (np.eye(3) - K @ H) @ sigma
 
     '''***        ***'''
 
